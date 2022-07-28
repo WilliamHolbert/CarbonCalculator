@@ -1,0 +1,160 @@
+---
+title: "Monte Carlo"
+author: "Dana Kenney"
+date: '2022-03-09'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r 1.1}
+#Loading in ClimateChangeArea data
+library(dplyr)
+
+x1 = ClimateChangeArea
+years = seq(2010,2021)
+
+#Total up emissions across areas
+v1 = aggregate(x1$Scope.1.Emissions..metric.tons.CO2e., by=list(Year=x1$Year), FUN=sum)
+v2 = aggregate(x1$Scope.2..location.based..metric.tons.CO2e., by=list(Year=x1$Year), FUN=sum)
+
+#Add year column back, name columns properly
+x2 = inner_join(v1, v2, by = "Year")
+colnames(x2) = c("Year", "Scope1", "Scope2_location")
+```
+
+
+
+```{r 2.0}
+#Re-shape data into columns by energy type
+z1 = EnergyConsumptionOverview
+z2 = z1[,-c(6,7)]
+colnames(z2) = c("Year", "Type","mwhRenewable", "mwhNonRenewable", "mwhTotal")
+
+z3 = z2
+z3Total = z2[,-c(3,4)]
+
+zFuelTotal = subset(z3Total, Type == 'Fuel')
+zFuelTotal = zFuelTotal[,-2]
+
+zElecTotal = subset(z3Total, Type == 'Electricty')
+zElecTotal = zElecTotal[,-2]
+
+zHeatTotal = subset(z3Total, Type == 'Heat')
+zHeatTotal = zHeatTotal[,-2]
+
+zSteamTotal = subset(z3Total, Type == 'Steam')
+zSteamTotal = zSteamTotal[,-2]
+
+zCoolTotal = subset(z3Total, Type == 'Cooling')
+zCoolTotal = zCoolTotal[,-2]
+
+zSelfTotal = subset(z3Total, Type == 'Self-generated non-fuel renewable energy')
+zSelfTotal = zSelfTotal[,-2]
+
+z4Total = full_join(zFuelTotal, zElecTotal, by="Year")
+z4Total = full_join(z4Total, zHeatTotal, by="Year")
+z4Total = full_join(z4Total, zSteamTotal, by="Year")
+z4Total = full_join(z4Total, zCoolTotal, by="Year")
+z4Total = full_join(z4Total, zSelfTotal, by="Year")
+
+z5Total = z4Total[order(z4Total$Year, decreasing=T),]
+
+colnames(z5Total) = c("Year", "mwhFuel", "mwhElec", "mwhHeat", "mwhSteam", "mwhCool", "mwhSelf")
+```
+
+
+```{r 2.1}
+#create finished df
+set.seed(333)
+
+df = inner_join(x6,z5Total)
+df = df[!duplicated(df$Year),]
+
+#interpolate na values
+df = as.data.frame(na.approx(df))
+```
+
+```{r 3.1}
+#function to find year-over-year change in emissions
+changes = function(x) {
+  r = numeric(length = length(df$Year) - 1)
+  for (i in 1:(length(df$Year) - 1)) {
+    if (!is.na(x[i]) && !is.na(x[i+1])) {
+      r[i] = (x[i+1] - x[i])
+    }
+    else {
+      r[i] = NA
+    }
+  }
+  r = r*-1
+  r = rev(r)
+}
+
+changes_df = changes(df$Scope2_location)
+changes_df
+
+changes_years = df$Year[1:9]
+
+changes = cbind(change = changes_df, to_year = changes_years)
+```
+
+```{r 3.2}
+#find mean and stdev of annual increase/decrease
+mean_change = mean(changes_df)
+stdv_change = sd(changes_df)
+init_value = df$Scope2_location[10]
+
+#one simulation
+set.seed(123)
+sim = rnorm(14, mean_change, stdv_change)
+
+futureyears = seq(2021, 2035)
+
+plot(x = futureyears, y = cumsum(c(init_value,sim)),  type='l',ylab='Scope 2 location-based',xlab='year',main='Emissions Projection')
+```
+
+```{r 3.3}
+#define simulation function
+simul8 = function(init_value, N, mean, stdv) {
+  changes = rnorm(N, mean, stdv)
+  projection = cumsum(c(init_value,changes))
+}
+```
+
+
+```{r 3.4}
+#multiple simulations
+sims = 50
+
+starts = rep(init_value, sims) %>%
+  setNames(paste("sim", 1:sims, sep=""))
+
+library(purrr)
+montecarlo = map_dfc(starts, simul8, N=(length(futureyears)-1), mean=mean_change, stdv=stdv_change)
+```
+```{r 3.5}
+#plot results
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+
+montecarlo2 = cbind(year = futureyears, montecarlo)
+
+plotcarlo = melt(montecarlo2, id.vars = 'year', variable.name = 'sims')
+
+sims2plot = rep(paste("sim", 1:sims, sep=""))
+
+ggplot(plotcarlo, aes(year, value)) +
+  geom_line(aes(color = sims)) +
+  ggtitle("Monte Carlo Emissions Simulations") +
+  xlab("Year") +
+  ylab("Scope 2 location-based emissions") +
+  theme(legend.position = "none")
+```
+
+
+

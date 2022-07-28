@@ -1,0 +1,105 @@
+---
+title: "Carbon Time Series Model"
+author: "Jacob Voyles"
+date: '2022-04-13'
+output: pdf_document
+---
+
+```{r}
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+
+#datacenter_carbon_data <- read.csv("Data/ClimateChangeBusinessActivity.csv")
+datacenter_carbon_data <- ClimateChangeBusinessActivity
+
+df <- datacenter_carbon_data[datacenter_carbon_data$Activity=="Datacenter",]
+df <- df[df$`Year (C7.3)` >= 2016,]
+df <- df[rowSums(is.na(df)) != ncol(df), ]
+df[is.na(df)] <- 0
+col_list = c("Scope 1 emissions (metric tons CO2e)", "Scope 2, location-based (metric tons CO2e)","Scope 2, market-based (metric tons CO2e)")
+df$Carbon <- rowSums(df[,col_list])
+keeps <- c("Year (C7.3)", "Carbon")
+df <- df[keeps]
+df <- plyr::rename(df,c('Year (C7.3)'='Year'))
+df
+```
+
+```{r}
+ts <- ts(rev(df$Carbon), start=c(2016,1))
+
+plot(ts, xlab ="Year",
+        ylab ="Carbon",
+        main ="Yearly Carbon of Datacenters in US",
+        col.main ="darkgreen")
+#components.ts = decompose(ts)
+
+#plot(components.ts)
+```
+
+```{r}
+library("fUnitRoots")
+urkpssTest(ts, type=c("tau"), lags=c("short"), use.lag=NULL)
+tsstationary = diff(ts, differences=1)
+plot(tsstationary)
+```
+
+```{r}
+acf(ts, lag.max=35)
+```
+
+```{r}
+fit.ets <- ets(ts)
+checkresiduals(fit.ets)
+```
+
+```{r}
+library(lmtest)
+fitARIMA <- arima(ts, method="ML")
+arima_model  = auto.arima(ts, trace=TRUE)
+arima_predict = predict(fitARIMA, n.ahead=15)
+```
+```{r}
+arima_fit <- Arima(ts, order=c(0,1,0))
+checkresiduals(arima_fit)
+```
+```{r}
+autoplot(forecast(arima_fit))
+```
+
+
+
+```{r}
+N = 10
+M = 1
+
+size_dist <- matrix(rnorm(N*M,mean=31077,sd=54914), N, M)
+pue_dist <- matrix(rnorm(N*M,mean=1.332,sd=0.2092), N, M)
+
+size_ts <- ts(size_dist, start = c(2022, 1))
+pue_ts <- ts(pue_dist, start = c(2022, 1))
+size_ts
+```
+
+
+
+```{r}
+#source('Plots/Monte_Test.R')
+models <- list(Carbon = arima_fit)
+               #Size = auto.arima(size_ts),
+               #PUE = auto.arima(pue_ts))
+result <- arimas_monte(models, n=15, n.iter=100)
+result
+```
+
+```{r}
+years = c(2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031)
+result_render <- as.data.frame.table(result$x)
+result_render$Var1 <- years
+result_render
+
+ggplot(data = result_render) +
+    geom_line(data = result_render , aes(x=Var1 , y=Freq , group= Var2, color=Var2))
+```
+

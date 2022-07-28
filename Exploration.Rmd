@@ -1,0 +1,106 @@
+---
+title: "Regression Exploration/Scrap Doc"
+author: "Dana Kenney"
+date: "3/2/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r 1.1}
+#Loading in ClimateChangeArea data
+library(dplyr)
+
+x1 = ClimateChangeArea
+years = seq(2010,2021)
+
+#Total up emissions across areas
+v1 = aggregate(x1$Scope.1.Emissions..metric.tons.CO2e., by=list(Year=x1$Year), FUN=sum)
+v2 = aggregate(x1$Scope.2..location.based..metric.tons.CO2e., by=list(Year=x1$Year), FUN=sum)
+
+#Add year column back, name columns properly
+x2 = inner_join(v1, v2, by = "Year")
+colnames(x2) = c("Year", "Scope1", "Scope2_location")
+```
+
+```{r 1.2}
+#initial plot
+library(ggplot2)
+graph1 = ggplot(data = x5, aes(Year, Scope2_location)) +
+  geom_point()
+graph1
+```
+
+```{r 2.0}
+#Re-shape data into columns by energy type
+
+z1 = EnergyConsumptionOverview
+z2 = z1[,-c(6,7)]
+colnames(z2) = c("Year", "Type","mwhRenewable", "mwhNonRenewable", "mwhTotal")
+
+z3 = z2
+z3Total = z2[,-c(3,4)]
+
+zFuelTotal = subset(z3Total, Type == 'Fuel')
+zFuelTotal = zFuelTotal[,-2]
+
+zElecTotal = subset(z3Total, Type == 'Electricty')
+zElecTotal = zElecTotal[,-2]
+
+zHeatTotal = subset(z3Total, Type == 'Heat')
+zHeatTotal = zHeatTotal[,-2]
+
+zSteamTotal = subset(z3Total, Type == 'Steam')
+zSteamTotal = zSteamTotal[,-2]
+
+zCoolTotal = subset(z3Total, Type == 'Cooling')
+zCoolTotal = zCoolTotal[,-2]
+
+zSelfTotal = subset(z3Total, Type == 'Self-generated non-fuel renewable energy')
+zSelfTotal = zSelfTotal[,-2]
+
+z4Total = full_join(zFuelTotal, zElecTotal, by="Year")
+z4Total = full_join(z4Total, zHeatTotal, by="Year")
+z4Total = full_join(z4Total, zSteamTotal, by="Year")
+z4Total = full_join(z4Total, zCoolTotal, by="Year")
+z4Total = full_join(z4Total, zSelfTotal, by="Year")
+
+z5Total = z4Total[order(z4Total$Year, decreasing=T),]
+
+colnames(z5Total) = c("Year", "mwhFuel", "mwhElec", "mwhHeat", "mwhSteam", "mwhCool", "mwhSelf")
+```
+
+
+```{r 2.1}
+set.seed(333)
+
+#combine total emissions data with power consumption data
+df = inner_join(x2,z5Total)
+df = df[!duplicated(df$Year),]
+#interpolate NA values
+df = as.data.frame(na.approx(df))
+
+#fit model to df
+fit = lm(Scope2_location ~ mwhFuel + mwhSteam + mwhElec + mwhCool, data=df)
+```
+
+```{r 2.2}
+
+#compare fit equation to true values
+prediction = predict(fit, df)
+
+preds = as.data.frame(cbind(year = df$Year, scope2_location = df$Scope2_location, prediction))
+
+graph3 = ggplot(data=preds) +
+   geom_line(aes(x=year,y=scope2_location,color='red')) +
+   geom_line(aes(x=year, y=prediction,color='blue')) +
+   xlab('Year') +
+   ylab('Scope 2 location-based') +
+  scale_color_discrete(name="", labels=c("Real Data","Approximations"))
+ graph3
+ 
+ fit
+```
+

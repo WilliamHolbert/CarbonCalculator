@@ -1,0 +1,260 @@
+---
+title: "Carbon Prediction Model"
+author: "Sydney Yeargers"
+date: '2022-03-31'
+output: pdf_document
+---
+
+```{r}
+library(dplyr)
+datacenters <- read.csv('Data/datacenter_data.csv')
+datacenters = datacenters[order(datacenters$Name),]
+datacenters = na.omit(datacenters)
+
+df = datacenters %>%
+  group_by(Year) %>%
+  summarise(AvgPUE=sd(PUE),
+            AvgSize=sd(Size..m.2.),
+            AvgLat=sd(Latitude),
+            AvgLong=sd(Longitude))
+
+
+obs = list(year=df)
+summary(obs[['year']])
+
+
+# look at ARIMA models predicting stock price
+```
+
+```{r}
+library(tidyr)
+library(ggplot2)
+p = gather(obs[['year']], Variable, Value, AvgPUE:AvgSize) %>%
+  ggplot(aes(x=Year, y=Value))+
+  geom_line()+
+  facet_wrap(~Variable, scales='free_y', ncol=1)+
+  labs(x='Year', y='', title='Yearly Average PUE and Size of Datacenters in US')
+p
+```
+
+```{r}
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("sf")
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+ggplot(data=world)+
+  geom_sf()+
+  coord_sf(xlim=c(-130.00, -65.00), ylim=c(20.00, 60.00))+
+  geom_point(data=df, aes(x=AvgLong, y=AvgLat))+
+  geom_text(data=df, aes(x=AvgLong, y=AvgLat, label=Year), nudge_x=4, size=3)
+```
+## Fill in Missing Values:
+                  
+```{r}
+library(ggpubr)
+# Fill in missing values
+nayear = c(1989:2021)
+nayear = nayear[!nayear %in% df$Year]
+
+# find linear regression models
+fitPUE89to00 = lm(AvgPUE~Year, data=df[c(1:2),])
+fitPUE01to05 = lm(AvgPUE~Year, data=df[c(3:4),])
+fitPUE05to07 = lm(AvgPUE~Year, data=df[c(4:5),])
+fitPUE08to10 = lm(AvgPUE~Year, data=df[c(6:7),])
+fitPUE12to15 = lm(AvgPUE~Year, data=df[c(9:10),])
+
+fitSize89to00 = lm(AvgSize~Year, data=df[c(1:2),])
+fitSize01to05 = lm(AvgSize~Year, data=df[c(3:4),])
+fitSize05to07 = lm(AvgSize~Year, data=df[c(4:5),])
+fitSize08to10 = lm(AvgSize~Year, data=df[c(6:7),])
+fitSize12to15 = lm(AvgSize~Year, data=df[c(9:10),])
+
+fitLat89to00 = lm(AvgLat~Year, data=df[c(1:2),])
+fitLat01to05 = lm(AvgLat~Year, data=df[c(3:4),])
+fitLat05to07 = lm(AvgLat~Year, data=df[c(4:5),])
+fitLat08to10 = lm(AvgLat~Year, data=df[c(6:7),])
+fitLat12to15 = lm(AvgLat~Year, data=df[c(9:10),])
+
+fitLong89to00 = lm(AvgLong~Year, data=df[c(1:2),])
+fitLong01to05 = lm(AvgLong~Year, data=df[c(3:4),])
+fitLong05to07 = lm(AvgLong~Year, data=df[c(4:5),])
+fitLong08to10 = lm(AvgLong~Year, data=df[c(6:7),])
+fitLong12to15 = lm(AvgLong~Year, data=df[c(9:10),])
+
+# Find linear equations
+naAvgPUE89to00 = fitPUE89to00$coefficients[1] + fitPUE89to00$coefficients[2] %*% nayear[1:10]
+naAvgPUE01to05 = fitPUE01to05$coefficients[1] + fitPUE01to05$coefficients[2] %*% nayear[11:13]
+naAvgPUE05to07 = fitPUE05to07$coefficients[1] + fitPUE05to07$coefficients[2] %*% nayear[14]
+naAvgPUE08to10 = fitPUE08to10$coefficients[1] + fitPUE08to10$coefficients[2] %*% nayear[15]
+naAvgPUE12to15 = fitPUE12to15$coefficients[1] + fitPUE12to15$coefficients[2] %*% nayear[16:17]
+
+naAvgSize89to00 = fitSize89to00$coefficients[1] + fitSize89to00$coefficients[2] %*% nayear[1:10]
+naAvgSize01to05 = fitSize01to05$coefficients[1] + fitSize01to05$coefficients[2] %*% nayear[11:13]
+naAvgSize05to07 = fitSize05to07$coefficients[1] + fitSize05to07$coefficients[2] %*% nayear[14]
+naAvgSize08to10 = fitSize08to10$coefficients[1] + fitSize08to10$coefficients[2] %*% nayear[15]
+naAvgSize12to15 = fitSize12to15$coefficients[1] + fitSize12to15$coefficients[2] %*% nayear[16:17]
+
+naAvgLat89to00 = fitLat89to00$coefficients[1] + fitLat89to00$coefficients[2] %*% nayear[1:10]
+naAvgLat01to05 = fitLat01to05$coefficients[1] + fitLat01to05$coefficients[2] %*% nayear[11:13]
+naAvgLat05to07 = fitLat05to07$coefficients[1] + fitLat05to07$coefficients[2] %*% nayear[14]
+naAvgLat08to10 = fitLat08to10$coefficients[1] + fitLat08to10$coefficients[2] %*% nayear[15]
+naAvgLat12to15 = fitLat12to15$coefficients[1] + fitLat12to15$coefficients[2] %*% nayear[16:17]
+
+naAvgLong89to00 = fitLong89to00$coefficients[1] + fitLong89to00$coefficients[2] %*% nayear[1:10]
+naAvgLong01to05 = fitLong01to05$coefficients[1] + fitLong01to05$coefficients[2] %*% nayear[11:13]
+naAvgLong05to07 = fitLong05to07$coefficients[1] + fitLong05to07$coefficients[2] %*% nayear[14]
+naAvgLong08to10 = fitLong08to10$coefficients[1] + fitLong08to10$coefficients[2] %*% nayear[15]
+naAvgLong12to15 = fitLong12to15$coefficients[1] + fitLong12to15$coefficients[2] %*% nayear[16:17]
+
+naAvgPUE89to00 = t(naAvgPUE89to00)
+naAvgPUE01to05 = t(naAvgPUE01to05)
+naAvgPUE05to07 = t(naAvgPUE05to07)
+naAvgPUE08to10 = t(naAvgPUE08to10)
+naAvgPUE12to15 = t(naAvgPUE12to15)
+
+naAvgSize89to00 = t(naAvgSize89to00)
+naAvgSize01to05 = t(naAvgSize01to05)
+naAvgSize05to07 = t(naAvgSize05to07)
+naAvgSize08to10 = t(naAvgSize08to10)
+naAvgSize12to15 = t(naAvgSize12to15)
+
+naAvgLat89to00 = t(naAvgLat89to00)
+naAvgLat01to05 = t(naAvgLat01to05)
+naAvgLat05to07 = t(naAvgLat05to07)
+naAvgLat08to10 = t(naAvgLat08to10)
+naAvgLat12to15 = t(naAvgLat12to15)
+
+naAvgLong89to00 = t(naAvgLong89to00)
+naAvgLong01to05 = t(naAvgLong01to05)
+naAvgLong05to07 = t(naAvgLong05to07)
+naAvgLong08to10 = t(naAvgLong08to10)
+naAvgLong12to15 = t(naAvgLong12to15)
+
+# aggregate values
+temp89to00 = cbind(nayear[1:10], naAvgPUE89to00, naAvgSize89to00,naAvgLat89to00, naAvgLong89to00)
+temp01to05 = cbind(nayear[11:13], naAvgPUE01to05, naAvgSize01to05,naAvgLat01to05, naAvgLong01to05)
+temp05to07 = cbind(nayear[14], naAvgPUE05to07, naAvgSize05to07, naAvgLat05to07, naAvgLong05to07)
+temp08to10 = cbind(nayear[15], naAvgPUE08to10, naAvgSize08to10, naAvgLat08to10, naAvgLong08to10)
+temp12to15 = cbind(nayear[16:17], naAvgPUE12to15, naAvgSize12to15, naAvgLat12to15, naAvgLong12to15)
+
+# name columns
+colnames(temp89to00) = c('Year','AvgPUE','AvgSize','AvgLat','AvgLong')
+colnames(temp01to05) = c('Year','AvgPUE','AvgSize','AvgLat','AvgLong')
+colnames(temp05to07) = c('Year','AvgPUE','AvgSize','AvgLat','AvgLong')
+colnames(temp08to10) = c('Year','AvgPUE','AvgSize','AvgLat','AvgLong')
+colnames(temp12to15) = c('Year','AvgPUE','AvgSize','AvgLat','AvgLong')
+
+# aggregate tables
+dftemp = rbind(df, temp89to00, temp01to05, temp05to07, temp08to10, temp12to15)
+dftemp = dftemp[order(dftemp$Year),]
+
+obs = list(year=dftemp)
+pPUE = ggplot(dftemp, aes(x=Year, y=AvgPUE))+
+  geom_point()+
+  geom_line()
+
+pSize = ggplot(dftemp, aes(x=Year, y=AvgSize))+
+  geom_point()+
+  geom_line()
+ggarrange(pPUE, pSize)
+```
+
+```{r}
+ggplot(data=world)+
+  geom_sf()+
+  coord_sf(xlim=c(-130.00, -65.00), ylim=c(20.00, 60.00))+
+  geom_point(data=dftemp, aes(x=AvgLong, y=AvgLat))+
+  geom_text(data=dftemp, aes(x=AvgLong, y=AvgLat, label=Year), nudge_x=4, size=3)
+```
+
+```{r}
+library(zoo)
+zoo_year <- zoo(x=obs[['year']][,c('AvgPUE','AvgSize','AvgLat','AvgLong')],
+             order.by=obs[['year']][['Year']])
+summary(zoo_year)
+```
+
+```{r}
+#figure out time series analysis
+ts <- ts(dftemp[,2], start=c(1989,1), end=c(2021,1),
+                            frequency=2)
+
+
+plot(ts, xlab ="Yearly Data",
+        ylab ="Avgerage yearly PUE",
+        main ="Yearly Average PUE of Datacenters in US",
+        col.main ="darkgreen")
+components.ts = decompose(ts)
+
+plot(components.ts)
+```
+
+# remove non-stationarity
+```{r}
+library("fUnitRoots")
+urkpssTest(ts, type=c("tau"), lags=c("short"), use.lag=NULL)
+tsstationary = diff(ts, differences=1)
+plot(tsstationary)
+```
+```{r}
+acf(ts, lag.max=35)
+```
+```{r}
+tsseasonaladj = ts-components.ts$seasonal
+tsstationary <- diff(tsseasonaladj, differences=1)
+plot(tsstationary)
+```
+```{r}
+acf(tsstationary)
+pacf(tsstationary)
+```
+
+# we should use an auto regressive model
+```{r}
+fitARIMA <- arima(ts, order=c(1,1,1), 
+                  seasonal=list(order=c(1,0,0), period=2), 
+                  method="ML")
+library(lmtest)
+coeftest(fitARIMA)
+```
+
+
+```{r}
+acf(fitARIMA$residuals)
+library(FitAR)
+boxresult=LjungBoxTest (fitARIMA$residuals,k=2,StartLag=1)
+plot(boxresult[,3],main= "Ljung-Box Q Test", ylab= "P-values", xlab= "Lag")
+qqnorm(fitARIMA$residuals)
+qqline(fitARIMA$residuals)
+```
+
+```{r}
+library(forecast)
+foo=auto.arima(ts, trace=TRUE)
+bar=predict(fitARIMA, n.ahead=15)
+```
+
+```{r}
+plot(bar$pred)
+```
+
+```{r}
+fit.ets <- ets(ts)
+checkresiduals(fit.ets)
+```
+```{r}
+ts %>% ets() %>% forecast(h=15) %>% autoplot()
+```
+```{r}
+source('Plots/Monte_Test.R')
+
+models <- list(auto.arima(ts))
+result <- arimas_monte(models, n=10, n.iter=100)
+result
+```
+```{r}
+plot_arimas_monte(15, result)
+```
+
