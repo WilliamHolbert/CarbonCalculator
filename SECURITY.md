@@ -12,7 +12,5 @@ currently being supported with security updates.
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
-
 If you need any additional files, feel free to email me at will.holbert@outlook.com. 
 I am still in contact with my other group members and anything I cannot answer, they should be able to
