@@ -1,0 +1,5 @@
+Completed,Year Set,Base Year,Target Year,Scope,Covered emissions in base year (metric tons CO2e),Covered emissions in base year as % of total base year,Targeted reduction from base year (%),Covered emissions in target year (metric tons CO2e),Covered emissions in reporting year (metric tons CO2e),% of target achieved [auto-calculated],Target ambition (¡C aligned)
+No,2017,2013,2030,"1, 2",920143,100,75,230035.75,346294,83.15359678,1.5
+No,2017,2013,2045,"1, 2",920143,100,75,230035.75,346294,83.15359678,2
+No,2020,2020,2030,3,11164000,100,50,5582000,11164000,0,1.5
+Yes,2013,2019,2020,"1 , 2",0.01,100,100,0,0,100,0

@@ -1,0 +1,79 @@
+Year (C8.2c),Fuel Type,Total fuel MWh consumed by the organization,MWh fuel consumed for self-generation of electricity,MWh fuel consumed for self-generation of heat,Emission factor (metric tons CO2e per MWh)
+2021,Diesel,93403,0,93403,0.25
+2021,Fuel Oil Number 2,53674,53674,0,0.25
+2021,Fuel Oil Number 6,220,0,220,0.26
+2021,Jet Kerosene,31488,0,31488,0.25
+2021,Liquefied Petroleum Gas (LPG),8963,0,8963,0.21
+2021,Motor Gasoline,43000,0,43000,0.24
+2021,Natural Gas,218557,141465,77092,0.18
+2020,Diesel,123363,0,123363,0.25
+2020,Fuel Oil Number 2,10947,10947,0,0.25
+2020,Fuel Oil Number 6,220,0,220,0.26
+2020,Jet Kerosene,35755,0,35755,0.25
+2020,Liquefied Petroleum Gas (LPG),11682,0,11682,0.21
+2020,Motor Gasoline,42751,0,42751,0.24
+2020,Natural Gas,196528,99511,97016,0.18
+2019,Diesel,113321,0,113321,0.25
+2019,Fuel Oil Number 2,17609,17609,0,0.25
+2019,Fuel Oil Number 6,220,0,220,0.26
+2019,Jet Kerosene,36122,0,36122,0.25
+2019,Liquefied Petroleum Gas (LPG),14255,0,14255,0.21
+2019,Motor Gasoline,33669,0,33669,0.24
+2019,Natural Gas,110863,0,110863,0.18
+2018,Diesel,116949,0,116949,0.25
+2018,Fuel Oil Number 2,21859,21859,0,0.25
+2018,Fuel Oil Number 6,220,0,220,0.26
+2018,Jet Kerosene,29862,0,29862,0.25
+2018,Liquefied Petroleum Gas (LPG),13539,0,13539,0.21
+2018,Motor Gasoline,34679,0,34679,0.24
+2018,Natural Gas,107687,0,107687,0.18
+2017,Diesel,119877,NA,NA,NA
+2017,Jet Kerosene,36321,NA,NA,NA
+2017,Fuel Oil Number 2,14150,NA,NA,NA
+2017,Fuel Oil Number 6,220,NA,NA,NA
+2017,Motor Gasoline,37322,NA,NA,NA
+2017,Natural Gas,89404,NA,NA,NA
+2017,Liquefied Petroleum Gas (LPG),11532,NA,NA,NA
+2016,Diesel,147530,NA,NA,NA
+2016,Jet Kerosene,25671,NA,NA,NA
+2016,Fuel Oil Number 2,7189,NA,NA,NA
+2016,Fuel Oil Number 6,251,NA,NA,NA
+2016,Motor Gasoline,46796,NA,NA,NA
+2016,Natural Gas,100476,NA,NA,NA
+2016,Liquefied Petroleum Gas (LPG),6902,NA,NA,NA
+2015,Diesel,120749,NA,NA,NA
+2015,Jet Kerosene,20991,NA,NA,NA
+2015,Fuel Oil Number 2,30362,NA,NA,NA
+2015,Fuel Oil Number 6,NA,NA,NA,NA
+2015,Motor Gasoline,32917,NA,NA,NA
+2015,Natural Gas,108709,NA,NA,NA
+2015,Liquefied Petroleum Gas (LPG),5585,NA,NA,NA
+2014,Diesel,NA,NA,NA,NA
+2014,Jet Kerosene,NA,NA,NA,NA
+2014,Fuel Oil Number 2,NA,NA,NA,NA
+2014,Fuel Oil Number 6,NA,NA,NA,NA
+2014,Motor Gasoline,NA,NA,NA,NA
+2014,Natural Gas,NA,NA,NA,NA
+2014,Liquefied Petroleum Gas (LPG),NA,NA,NA,NA
+2013,Diesel,NA,NA,NA,NA
+2013,Jet Kerosene,NA,NA,NA,NA
+2013,Fuel Oil Number 2,NA,NA,NA,NA
+2013,Fuel Oil Number 6,NA,NA,NA,NA
+2013,Motor Gasoline,NA,NA,NA,NA
+2013,Natural Gas,NA,NA,NA,NA
+2013,Liquefied Petroleum Gas (LPG),NA,NA,NA,NA
+2012,Diesel,770,NA,NA,NA
+2012,Jet Kerosene,12111,NA,NA,NA
+2012,Fuel Oil Number 2,33338,NA,NA,NA
+2012,Natural Gas,107242,NA,NA,NA
+2012,Liquefied Petroleum Gas (LPG),737,NA,NA,NA
+2011,Diesel,893,NA,NA,NA
+2011,Jet Kerosene,19051,NA,NA,NA
+2011,Fuel Oil Number 2,43980,NA,NA,NA
+2011,Natural Gas,116263,NA,NA,NA
+2011,Liquefied Petroleum Gas (LPG),719,NA,NA,NA
+2010,Diesel,1050,NA,NA,NA
+2010,Jet Kerosene,14745,NA,NA,NA
+2010,Fuel Oil Number 2,24701,NA,NA,NA
+2010,Natural Gas,107700,NA,NA,NA
+2010,Liquefied Petroleum Gas (LPG),5281,NA,NA,NA
