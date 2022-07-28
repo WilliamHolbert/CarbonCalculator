@@ -1,0 +1,83 @@
+---
+title: "Renewable Energy Breakdown"
+author: "Dana Kenney"
+date: '2022-04-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r data setup}
+#libraries
+library(dplyr)
+
+#load in data frame
+df = EnergyConsumptionOverview
+colnames(df) = c('Year','Type', 'mwhRenewable', 'mwhNonRenewable', 'mwhTotal')
+df = df[1:64,1:5]
+df$Type = as.factor(df$Type)
+df$mwhRenewable = as.numeric(df$mwhRenewable)
+df$mwhNonRenewable = as.numeric(df$mwhNonRenewable)
+df = na.omit(df)
+
+#aggregate
+
+dfAggRenewable = df %>%
+  group_by(Year) %>%
+  summarize(Total = sum(mwhRenewable))
+
+dfAggRenewable = as.data.frame(rbind(c(2015,3836649), dfAggRenewable))
+
+colnames(dfAggRenewable) = c('Year','mwhRenewable')
+
+#as time series
+tsDatRenewable = ts(dfAggRenewable$mwhRenewable, start = c(2015), frequency = 1)
+```
+
+```{r eda renewable}
+
+library("fUnitRoots")
+urkpssTest(tsDatRenewable, type = c("tau"), lags = c("short"),use.lag = NULL, doplot = TRUE)
+
+#remove non-stationarity, determine d
+tsStationaryRenew = diff(tsDatRenewable, differences=1)
+plot(tsStationaryRenew)
+plot(tsDatRenewable)
+
+#check for linear association between observations separated by lag
+acf(tsDatRenewable, lag.max=4)
+#determine p
+pacf(tsDatRenewable, lag.max=4)
+
+#determine q
+acf(tsStationaryRenew,lag.max=4)
+```
+
+```{r model fit renewable}
+fitRenewable = arima(tsDatRenewable, order = c(1.5,1,1))
+library(lmtest)
+coeftest(fitRenewable)
+```
+
+```{r trial prediction renewable}
+#set up prediction
+predYears = 10
+predStart = 2022
+
+#predict
+tenYearProjection = predict(fitRenewable, n.ahead = predYears)
+
+#set up predictions for graphing
+projectionYears = seq(from = predStart, to = (predStart + predYears - 1))
+
+tenYearProjection = as.data.frame(cbind(projectionYears, as.data.frame(tenYearProjection$pred)))
+colnames(tenYearProjection) = c('Year','mwhRenewable')
+
+library(ggplot2)
+ggplot() +
+  geom_line(data = dfAggRenewable, aes(x = Year, y = mwhRenewable)) +
+  geom_line(data = tenYearProjection, aes(x = Year, y = mwhRenewable), linetype = "dashed")
+```
