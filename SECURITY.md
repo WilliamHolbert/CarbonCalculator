@@ -12,4 +12,5 @@ Only supported version is 1.1
 ## Reporting a Vulnerability
 
 If you need any additional files, feel free to email me at will.holbert@outlook.com. 
-I am still in contact with my other group members and anything I cannot answer, they should be able to
+I am no longer in contact withthe other group members and this is a repository for the code
+
